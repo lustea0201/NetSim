@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(Network_simulation)
+project(Network_simulation_LUSTER)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "" FORCE)

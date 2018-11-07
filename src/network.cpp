@@ -25,22 +25,28 @@ bool Network::is_link(const size_t& m, const size_t& n) {
 	return false;
 }
 	
-// Version 1) proposée dans le mail qui nous a été envoyé
+/* 
+Version 1) proposée dans le mail qui nous a été envoyé.
+Avec n nodes, le nombre maximum de liens qui peuvent être créés est
+donné par n/2*(n - 1). Donc, plus n*d est proche de n/2*(n - 1), plus 
+le nombre de liens créés s'éloignera de n*d.
+*/
+
 size_t Network::random_connect(const double& mean) {
-	
+	if (mean < 0) return 0;
 	links.clear();
 	size_t totalCount(0), netSize(size());
 	std::vector<size_t> nodes;
 	for (size_t i(0); i < netSize; ++i) nodes.push_back(i);
 	
 	for (size_t i(0); i < netSize; ++i) {
-		size_t nVal = RNG.poisson(mean); 
+		size_t nLinks = RNG.poisson(mean); 
 		RNG.shuffle(nodes);
-		if (nVal >= netSize) {
-			nVal = netSize - 1 ;
+		if (nLinks >= netSize) {
+			nLinks = netSize - 1;
 		}
 		size_t index(0), count(0);
-		while (count < nVal and index < netSize) {
+		while (count < nLinks and index < netSize) {
 			if(add_link(i, index)) ++count; 
 			++index;
 		}
@@ -50,10 +56,9 @@ size_t Network::random_connect(const double& mean) {
 }
 
 size_t Network::set_values(const std::vector<double>& v) {
-	size_t nSet=0;
-	for (size_t i(0); i < size() and i < v.size(); ++i) {
+	size_t nSet=std::min(size(), v.size());
+	for (size_t i(0); i < nSet; ++i) {
 	  values[i] = v[i]; 
-	  ++nSet;
 	}
 	return nSet; 
 }
@@ -79,9 +84,9 @@ std::vector<double> Network::sorted_values() const {
 
 std::vector<size_t> Network::neighbors(const size_t& n) const {
 	std::vector<size_t> neighbors;
-	neighbors.clear();
-	for (auto i : links) {
-		if (i.first == n) neighbors.push_back(i.second);
+	std::pair <std::multimap<size_t,size_t>::const_iterator, std::multimap<size_t,size_t>::const_iterator> eqRange = links.equal_range(n);
+	for (std::multimap<size_t,size_t>::const_iterator it=eqRange.first; it!=eqRange.second; ++it) {
+		neighbors.push_back(it->second);
 	}
 	return neighbors;
 }
